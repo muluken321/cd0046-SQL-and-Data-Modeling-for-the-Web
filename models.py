@@ -1,13 +1,9 @@
 from email.policy import default
-from flask_migrate import Migrate
-from config import app
 from flask_sqlalchemy import SQLAlchemy
-from flask_moment import Moment
-from flask import Flask
-moment = Moment(app)
-app.config.from_object('config')
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+
+
+db = SQLAlchemy()
+
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
@@ -21,13 +17,12 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String), nullable=False)
     image_link = db.Column(db.String(500), nullable=True)
     facebook_link = db.Column(db.String(120), nullable=True)
     website_link = db.Column(db.String(120), nullable=True)
-    looking_talent = db.Column(db.String(10), default = 'n')
+    looking_talent = db.Column(db.Boolean, default = False)
     seeking_description = db.Column(db.String(120))
-    #rel = db.relationship('Show', backref='parent', lazy=True)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -39,13 +34,12 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120), nullable=True)
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String), nullable=False)
     image_link = db.Column(db.String(500), nullable=True)
     facebook_link = db.Column(db.String(120), nullable=True)
     website_link = db.Column(db.String(120), nullable=True)
-    looking_venue= db.Column(db.String(10), nullable=True, default='n')
+    looking_venue= db.Column(db.Boolean, nullable=True, default=False)
     seeking_description = db.Column(db.String(120), nullable= True)
-    #rel = db.relationship('Show', backref='parent', lazy=True)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -57,3 +51,6 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'))
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'))
     start_time = db.Column(db.String(120), nullable=False)
+    art_ref = db.relationship('Artist', backref='artist', lazy='joined')
+    venue_ref = db.relationship('Venue', backref='venue', lazy='joined')
+

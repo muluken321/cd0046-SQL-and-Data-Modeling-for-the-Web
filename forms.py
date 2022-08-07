@@ -1,8 +1,18 @@
 from datetime import datetime
-from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
-from wtforms.validators import DataRequired, AnyOf, URL
+from xml.dom import ValidationErr
+from flask_wtf import FlaskForm as Form
 
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
+from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
+import re
+
+
+def is_valid_phone(number):
+    regex = re.compile('^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$')
+    return regex.match(number)
+def is_valid_facebook_url(url):
+    regex = re.compile('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?')
+    return regex.match(url)
 class ShowForm(Form):
     artist_id = StringField(
         'artist_id'
@@ -125,6 +135,14 @@ class VenueForm(Form):
     seeking_description = StringField(
         'seeking_description'
     )
+    def validate(self):
+        if not is_valid_phone(self.phone.data):
+            raise ValidationError("please enter a valid phone number")
+            return False
+        if not is_valid_facebook_url(self.facebook_link.data):
+            raise ValidationError("please enter a valid facebook url")
+            return False
+        return True
 
 
 
@@ -193,7 +211,7 @@ class ArtistForm(Form):
     )
     phone = StringField(
         # TODO implement validation logic for state
-        'phone'
+        'phone',validators=[DataRequired()]
     )
     image_link = StringField(
         'image_link'
@@ -236,4 +254,12 @@ class ArtistForm(Form):
     seeking_description = StringField(
             'seeking_description'
      )
+    def validate(self):
+        if not is_valid_phone(self.phone.data):
+            raise ValidationError("please enter a valid phone number")
+            return False
+        if not is_valid_facebook_url(self.facebook_link.data):
+            raise ValidationError("please enter a valid facebook url")
+            return False
+        return True
 
